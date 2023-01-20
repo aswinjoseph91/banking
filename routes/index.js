@@ -27,11 +27,11 @@ router.get('/', function (req, res, next) {
     res.render('index', {title: 'Express'});
 });
 /* POST home page. */
-router.post('/', uploads.single('csvfile'), function (req, res, next) {
+router.post('/', uploads.single('csvfile'),function (req, res, next) {
     var datas=[],empResponse;    
     csv()
     .fromFile(req.file.path)
-    .then((response) => {       
+    .then(async (response) => {       
       for (var x = 0; x < response.length; x++) {
           var data={date:"",narration:"",withdrawal:"",deposit:"",closing_balance:""};
         empResponse = response[x].date;
@@ -45,7 +45,8 @@ router.post('/', uploads.single('csvfile'), function (req, res, next) {
         empResponse = (response[x].closing_balance)?parseFloat(response[x].closing_balance):0;
         data.closing_balance = empResponse;
         datas.push(data);         
-      }   
+      }
+      await stmt.deleteMany({});
       stmt.insertMany(datas, (err, data) => {
         if (err) {
           console.log(err);
